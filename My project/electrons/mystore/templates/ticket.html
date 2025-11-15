@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tickets</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+         body {
+      background-color: #ffffff;
+      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      height: 100vh;
+      background: #f8f9fa;
+      border-right: 1px solid #e0e0e0;
+      padding-top: 30px;
+      position: fixed;
+      width: 250px;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 12px 20px;
+      color: #333;
+      font-weight: 500;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .sidebar a:hover {
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+      transform: scale(1.02);
+    }
+
+    /* Main Content */
+    .content {
+      margin-left: 260px;
+      padding: 30px;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    </style>
+</head>
+
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <h4 class="text-center fw-bold text-primary">ELECTRON</h4>
+    <a href="/" class="d-block py-2 px-3">Home</a>
+    <a href="/admin_dashboard" class="d-block py-2 px-3">Dashboard</a>
+    <a href="/user_management" class="d-block py-2 px-3">User Management</a>
+    <a href="/product_management" class="d-block py-2 px-3">Product Management</a>
+    <a href="/admin_orders" class="d-block py-2 px-3">Orders</a>
+    <a href="/ticket" class="d-block py-2 px-3 fw-bold text-primary">Tickets</a>
+    <hr>
+    <a href="#" class="d-block py-2 px-3">Settings</a>
+    <a href="/logout" class="d-block py-2 px-3 text-danger">Logout</a>
+</div>
+
+<div class="content">
+    <h3 class="mb-4">Support Tickets</h3>
+
+    <!-- STATUS FILTER -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <select id="statusFilter" class="form-select">
+                <option value="">All Tickets</option>
+                <option value="open" {% if selected_status == "open" %}selected{% endif %}>Open</option>
+                <option value="in_progress" {% if selected_status == "in_progress" %}selected{% endif %}>In Progress</option>
+                <option value="resolved" {% if selected_status == "resolved" %}selected{% endif %}>Resolved</option>
+                <option value="closed" {% if selected_status == "closed" %}selected{% endif %}>Closed</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- TICKET TABLE -->
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Product</th>
+                    <th>Issue</th>
+                    <th>Status</th>
+                    <th>Assign Staff</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for t in tickets %}
+                <tr>
+                    <td>{{ t.id }}</td>
+                    <td>{{ t.user.user_name }}</td>
+                    <td>{{ t.product.product_name }}</td>
+                    <td>{{ t.issue }}</td>
+                    <td>{{ t.status }}</td>
+
+                    <td>
+                        <select class="form-select assign-staff" data-ticket="{{ t.id }}">
+                            <option value="">-- Select Staff --</option>
+                            {% for s in staff_list %}
+                                <option value="{{ s.user_name }}"
+                                    {% if t.assigned_staff == s.user_name %}selected{% endif %}>
+                                    {{ s.user_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-success d-none" id="msg-{{ t.id }}">Saved!</small>
+                    </td>
+
+                    <td>
+                        <button class="btn btn-primary btn-sm viewTicket" data-id="{{ t.id }}">
+                            View
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+<!-- MODAL POPUP -->
+<div class="modal fade" id="ticketModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Ticket Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <p><strong>ID:</strong> <span id="m_id"></span></p>
+                <p><strong>User:</strong> <span id="m_user"></span></p>
+                <p><strong>Product:</strong> <span id="m_product"></span></p>
+                <p><strong>Issue:</strong> <span id="m_issue"></span></p>
+                <p><strong>Status:</strong> <span id="m_status"></span></p>
+                <p><strong>Assigned Staff:</strong> <span id="m_staff"></span></p>
+                <p><strong>Created At:</strong> <span id="m_created"></span></p>
+                <p><strong>Updated At:</strong> <span id="m_updated"></span></p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* -------------------- STATUS FILTER -------------------- */
+$("#statusFilter").change(function () {
+    let status = $(this).val();
+    window.location.href = "/ticket?status=" + status;
+});
+
+/* -------------------- ASSIGN STAFF -------------------- */
+$(".assign-staff").change(function () {
+    let ticketId = $(this).data("ticket");
+    let staffName = $(this).val();
+    let msg = $("#msg-" + ticketId);
+
+    $.post("/assign_staff/", {
+        ticket_id: ticketId,
+        staff_name: staffName,
+        csrfmiddlewaretoken: "{{ csrf_token }}"
+    }, function (response) {
+        if (response.status === "success") {
+            msg.removeClass("d-none");
+            setTimeout(() => msg.addClass("d-none"), 1500);
+        }
+    });
+});
+
+/* -------------------- MODAL VIEW TICKET -------------------- */
+$(".viewTicket").click(function () {
+    let ticketId = $(this).data("id");
+
+    $.get("/ticket_details/", { ticket_id: ticketId }, function (res) {
+        if (res.status === "success") {
+
+            let d = res.data;
+
+            $("#m_id").text(d.id);
+            $("#m_user").text(d.user);
+            $("#m_product").text(d.product);
+            $("#m_issue").text(d.issue);
+            $("#m_status").text(d.status);
+            $("#m_staff").text(d.assigned_staff || "Not Assigned");
+            $("#m_created").text(d.created_at);
+            $("#m_updated").text(d.updated_at);
+
+            new bootstrap.Modal(document.getElementById("ticketModal")).show();
+        }
+    });
+});
+</script>
+
+</body>
+</html>

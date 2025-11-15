@@ -1,0 +1,219 @@
+{% if request.session.role == 'admin' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard | ELECTRON</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: #ffffff;
+      font-family: 'Poppins', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      height: 100vh;
+      background: #f8f9fa;
+      border-right: 1px solid #e0e0e0;
+      padding-top: 30px;
+      position: fixed;
+      width: 250px;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar a {
+      display: block;
+      padding: 12px 20px;
+      color: #333;
+      font-weight: 500;
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .sidebar a:hover {
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+      transform: scale(1.02);
+    }
+
+    /* Main Content */
+    .content {
+      margin-left: 260px;
+      padding: 30px;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards */
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-title {
+      font-weight: 600;
+      color: #007bff;
+    }
+
+    canvas {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    }
+
+  </style>
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <h4 class="text-center fw-bold mb-4 text-primary">ELECTRON</h4>
+    <a href="/">Home</a>
+    <a href="/admin_dashboard">Dashboard</a>
+    <a href="/user_management">User Management</a>
+    <a href="/product_management">Product Management</a>
+    <a href="/admin_orders">Orders</a>
+    <a href="/ticket">Tickets</a>
+    <hr>
+    <a href="#">Settings</a>
+    <a href="/logout" class="text-danger">Logout</a>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <h3 class="fw-bold mb-4">Admin Dashboard</h3>
+
+    <!-- Stats Cards -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-3">
+        <div class="card p-3 text-center">
+          <h5 class="card-title">Users</h5>
+          <h2>{{ users }}</h2>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card p-3 text-center">
+          <h5 class="card-title">Orders</h5>
+          <h2>{{ orders }}</h2>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card p-3 text-center">
+          <h5 class="card-title">Products</h5>
+          <h2>{{ products_count }}</h2>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card p-3 text-center">
+          <h5 class="card-title">Revenue</h5>
+          <h2>{{ total_price_sum }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphs -->
+    <div class="row g-4">
+      <div class="col-md-8">
+        <h5 class="mb-2 fw-semibold">Monthly Sales Overview</h5>
+        <canvas id="salesChart"></canvas>
+      </div>
+      <div class="col-md-4">
+        <h5 class="mb-2 fw-semibold">Most Selling Products</h5>
+        <canvas id="productChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Tickets + Ratings -->
+    <div class="row g-4 mt-4">
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h5 class="card-title">Recent Support Tickets</h5>
+          <ul class="list-group list-group-flush">
+           {% for ticket in tickets %}
+            <li class="list-group-item"># {{ ticket.id }} {{ ticket.issue }} ( {{ticket.user.user_name}} )</li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="card p-3">
+          <h5 class="card-title">Staff Ratings</h5>
+          <canvas id="ratingChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    // Monthly Sales Chart
+    const salesCtx = document.getElementById('salesChart');
+    new Chart(salesCtx, {
+      type: 'line',
+      data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+        datasets: [{
+          label: 'Sales (₹)',
+          data: [12000, 19000, 15000, 22000, 26000, 30000, 28000, 35000, 42000, 47000],
+          borderColor: '#007bff',
+          backgroundColor: 'rgba(0,123,255,0.2)',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: { responsive: true }
+    });
+
+    // Product Chart
+    const productCtx = document.getElementById('productChart');
+    new Chart(productCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['TV', 'Laptop', 'AC', 'Speakers', 'Fridge'],
+        datasets: [{
+          data: [30, 25, 15, 20, 10],
+          backgroundColor: ['#007bff', '#00c6ff', '#ffc107', '#28a745', '#dc3545']
+        }]
+      },
+      options: { responsive: true }
+    });
+
+    // Staff Ratings
+    const ratingCtx = document.getElementById('ratingChart');
+    new Chart(ratingCtx, {
+      type: 'bar',
+      data: {
+        labels: ['Staff A', 'Staff B', 'Staff C', 'Staff D'],
+        datasets: [{
+          label: 'Average Rating (⭐)',
+          data: [4.5, 3.8, 4.2, 4.9],
+          backgroundColor: '#00c6ff'
+        }]
+      },
+      options: { scales: { y: { beginAtZero: true, max: 5 } } }
+    });
+  </script>
+
+</body>
+</html>
+{% else %}
+<h1 style="color: red;">Wrong Entrence </h1>
+
+{% endif%}

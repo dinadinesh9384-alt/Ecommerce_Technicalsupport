@@ -1,0 +1,7 @@
+<h2>Order Confirmation</h2>
+<p>Product: {{ order.product.product_name }}</p>
+<p>Quantity: {{ order.quantity }}</p>
+<p>Total Price: ₹{{ order.total_price }}</p>
+<p>Warranty Number: {{ order.warranty_number }}</p>
+<p>Warranty Ends: {{ order.warranty_end|date:"d M Y" }}</p>
+<p>Delivery Address : {{ order.address }}</p>

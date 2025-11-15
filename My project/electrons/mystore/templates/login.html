@@ -1,0 +1,238 @@
+{% include "includes/nav_bar.html" %}
+{% block content %}
+{% if request.session.user_name %}
+<h1>You alredy logined   GO Back... <a style="text-decoration: none;color: rgb(197, 119, 119);" href="/">Back</a></h1>
+{% else %}
+<div class="login-container d-flex justify-content-center align-items-center" style="height: 657px;">
+  <div class="login-card">
+    <h2 class="login-title">ELECTRON</h2>
+    <form id="loginForm" method="POST" action="/login_user">
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Email / Username</label>
+        <input type="text" id="email_id" name="user_name" class="form-control" placeholder="Enter email as username" onblur="click_email()">
+        <p id="email_msg"></p>
+      </div>
+
+      <div class="mb-3 position-relative">
+        <label class="form-label">Password</label>
+        <input type="password" name="user_password"  class="form-control" id="passwordField"  placeholder="Enter password" required>
+        <span class="toggle-password" id="togglePassword">&#128065;</span>
+        <p id="password_msg"></p>
+      </div>
+
+      <button onclick="click_password(event)" type="submit" class="btn-login">Login</button>
+      <div class="signup-text">
+        Don’t have an account? <a href="/signin">Sign Up</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+
+<script>
+    // Show/Hide password toggle
+  const togglePassword = document.getElementById('togglePassword');
+  const passwordField = document.getElementById('passwordField');
+  togglePassword.addEventListener('click', () => {
+    const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+    passwordField.setAttribute('type', type);
+  });
+
+  // Spark animation on login click
+  const btnLogin = document.querySelector('.btn-login');
+  btnLogin.addEventListener('click', (e) => {
+    const btn = e.target;
+    for (let i = 0; i < 10; i++) {
+      const spark = document.createElement('span');
+      spark.classList.add('spark');
+      spark.style.left = `${Math.random() * btn.offsetWidth}px`;
+      spark.style.top = `${Math.random() * btn.offsetHeight}px`;
+      btn.appendChild(spark);
+      setTimeout(() => spark.remove(), 800);
+    }
+  });
+
+  function click_email() {
+    
+    var email = $("#email_id").val();
+    var msg = $("#email_msg");
+    if (email == "") {
+      
+        msg.text("❌ Please enter your email").css("color", "red");
+    } else {
+        // ✅ Simple AJAX check
+        $.ajax({
+            url: "/check_email/",
+            method: "POST",
+            data: {
+                email: email,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.exists) {
+                    msg.text("✅ Email available..!").css("color", "green");
+                } else {
+                    msg.text("❌ Username not available !").css("color", "red");
+                }
+            }
+        });
+    }
+}
+  function click_password(e) {
+    
+      e = e || window.event;
+      // e.stopPropagation();
+      e.preventDefault();
+    var email = $("#email_id").val();
+    var verify = $("#passwordField").val();
+    var msg = $("#password_msg");
+    if (verify == "") {
+      alert("x")
+        msg.text("❌ Please enter your password").css("color", "red");
+    } else {
+        // ✅ Simple AJAX check
+        $.ajax({
+            url: "/check_password/",
+            method: "POST",
+            data: {
+                verify: verify,
+                email: email,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.exists) {
+                    msg.text("✅ password available..!").css("color", "green");
+                    setTimeout(() => {
+                    // location.reload(); // or window.location.href = "/"; to go home
+                    document.getElementById("loginForm").submit();
+                    }, 100);
+                } else {
+                    msg.text("❌ password not available !").css("color", "red");
+                }
+            }
+        });
+    }
+}
+
+
+
+
+</script>
+
+
+
+
+<style>
+  .login-container {
+    background: linear-gradient(135deg, #007bff, #00c6ff, #00ff99);
+    overflow: hidden;
+  }
+
+  .login-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    padding: 40px;
+    width: 380px;
+    animation: fadeIn 1s ease-in-out;
+    position: relative;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .login-title {
+    font-weight: 800;
+    text-align: center;
+    color: #007bff;
+    letter-spacing: 1px;
+    margin-bottom: 25px;
+  }
+
+  .form-control {
+    border-radius: 10px;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+  }
+
+  .form-control:focus {
+    border-color: #00c6ff;
+    box-shadow: 0 0 8px #00c6ff;
+  }
+
+  .btn-login {
+    background: linear-gradient(90deg, #007bff, #00c6ff, #00ff99);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 10px 0;
+    font-weight: 600;
+    font-size: 18px;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+  }
+
+  .btn-login:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 15px rgba(0, 198, 255, 0.6);
+  }
+
+  /* Spark Animation */
+  .spark {
+    position: absolute;
+    width: 6px;
+    height: 6px;
+    background: yellow;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: spark 0.8s ease-out forwards;
+  }
+
+  @keyframes spark {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 0; transform: scale(3) translateY(-20px); }
+  }
+
+  .toggle-password {
+    cursor: pointer;
+    position: absolute;
+    right: 15px;
+    top: 10px;
+    color: gray;
+    transition: 0.3s;
+  }
+
+  .toggle-password:hover {
+    color: #007bff;
+  }
+
+  .signup-text {
+    text-align: center;
+    margin-top: 15px;
+  }
+
+  .signup-text a {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+  }
+
+  .signup-text a:hover {
+    text-decoration: underline;
+    color: #00c6ff;
+  }
+</style>
+
+<script>
+
+</script>
+{% endif %}
+{% endblock %}

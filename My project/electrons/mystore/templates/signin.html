@@ -1,0 +1,277 @@
+{% include "includes/nav_bar.html" %}
+
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ELECTRON | Sign Up</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    
+    .main {
+      height: 93vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #00c6ff, #007bff, #00ff99);
+      font-family: 'Poppins', sans-serif;
+      
+    }
+
+    .signup-card {
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      padding: 30px;
+      width: 400px;
+      position: relative;
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .signup-title {
+      font-weight: 800;
+      text-align: center;
+      color: #00c6ff;
+      letter-spacing: 1px;
+      margin-bottom: 25px;
+    }
+
+    .form-control {
+      border-radius: 10px;
+      padding: 10px 15px;
+      transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+      border-color: #00c6ff;
+      box-shadow: 0 0 10px #00c6ff;
+    }
+
+    .btn-signup {
+      background: linear-gradient(90deg, #007bff, #00c6ff, #00ff99);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 10px 0;
+      font-weight: 600;
+      font-size: 18px;
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .btn-signup:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(0, 198, 255, 0.7);
+    }
+
+    .confetti {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: yellow;
+      border-radius: 50%;
+      pointer-events: none;
+      animation: confetti-fall 1s ease-out forwards;
+    }
+
+    @keyframes confetti-fall {
+      from { opacity: 1; transform: translateY(0) scale(1); }
+      to { opacity: 0; transform: translateY(-60px) scale(2); }
+    }
+
+    .form-check-label {
+      font-size: 14px;
+    }
+
+    .signin-text {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .signin-text a {
+      color: #007bff;
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    .signin-text a:hover {
+      text-decoration: underline;
+      color: #00c6ff;
+    }
+  </style>
+
+<div class="main">
+
+  <div class="signup-card">
+    <h2 class="signup-title">ELECTRON</h2>
+    <form id="signupForm"  method="POST" action="/inser_details">
+        {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label">Full Name</label>
+        <input type="text" name="user_name" id="name_id" class="form-control" placeholder="Enter your full name" onblur="click_name()" required>
+        <p id="msg"></p>
+    </div>
+
+      <div class="mb-3">
+        <label class="form-label">Email</label>
+        <input type="text" name="user_email" id="email_id" class="form-control" placeholder="Enter your email" onblur="click_email()" required>
+        <p id="email_msg"></p>
+    </div>
+
+      <div class="mb-3">
+        <label class="form-label">Phone Number</label>
+        <input type="text" name="user_number" id="number_id" class="form-control" placeholder="Enter your phone number" onblur="click_number()" required>
+        <p id="num_msg"></p>
+    </div>
+
+      <div class="mb-3">
+        <label class="form-label">Password</label>
+        <input type="text" name="user_password" id="password_id" class="form-control" placeholder="Create password" onkeyup="click_password()" required>
+        <p id="password_msg"></p>
+    </div>
+
+      <div class="form-check mb-3">
+        <input class="form-check-input" type="checkbox" required>
+        <label class="form-check-label">I agree to the <a href="#">Terms & Conditions</a></label>
+      </div>
+
+      <button type="submit" class="btn-signup">Sign Up</button>
+
+      <div class="signin-text">
+        Already have an account? <a href="/login">Sign In</a>
+      </div>
+    </form>
+  </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+  <!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function click_name(){
+    var a = document.getElementById("name_id").value
+    var b = document.getElementById("msg")
+    if ( a == ""|| a == undefined){
+        b.innerText = "❌ Please enter a valid name"
+        b.style.color = "red"
+    }else if (!/^[A-Za-z ]+$/.test(a)) {
+    b.innerText = "⚠️ Only letters and spaces allowed"
+    b.style.color = "orange"
+    }else {
+      b.innerText = "✅ Success..!"
+      b.style.color = "green"
+      return true; 
+    }
+}
+
+function click_password(){
+    var a = document.getElementById("password_id").value;
+    var b = document.getElementById("password_msg");
+    
+    const strongRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@!#$%^&*]).{8,}$/;
+    
+    if (a === "") {
+        b.innerHTML = "⚠️ Please enter a password.";
+        b.style.color = "orange";
+    } 
+    else if (strongRegex.test(a)) {
+        b.style.color = "#00ff99";
+        b.innerHTML = "✅ Strong Password!";
+    } 
+    else {
+        b.style.color = "#ff4444";
+        b.innerHTML = "❌ Weak Password! Use 8+ chars, upper, lower, number, and special symbol.";
+    }
+}
+
+
+
+
+function click_email() {
+    var email = $("#email_id").val();
+    var msg = $("#email_msg");
+    var pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (email == "") {
+        msg.text("❌ Please enter your email").css("color", "red");
+    } 
+    else if (!pattern.test(email)) {
+        msg.text("⚠️ Enter a valid email").css("color", "orange");
+    } 
+    else {
+        // ✅ Simple AJAX check
+        $.ajax({
+            url: "/check_email/",
+            method: "POST",
+            data: {
+                email: email,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(response) {
+                if (response.exists) {
+                    msg.text("❌ Email already taken!").css("color", "red");
+                } else {
+                    msg.text("✅ success..!").css("color", "green");
+                }
+            }
+        });
+    }
+}
+
+
+
+
+
+function click_number(){
+    a = document.getElementById("number_id").value
+    b = document.getElementById("num_msg")
+    if (isNaN(a)){
+        b.innerText = "❌ Please enter only number"
+        b.style.color = "red"
+    }else if ( a == ""|| a == undefined){
+        b.innerText = "❌ Please enter your Number"
+        b.style.color = "red"
+    }else {
+      b.innerText = "✅ Success..!"
+      b.style.color = "green"
+      return true; 
+    }
+}
+
+</script>
+
+
+
+
+  <script>
+    // Confetti animation on sign-up button click
+    const btnSignup = document.querySelector('.btn-signup');
+    btnSignup.addEventListener('click', (e) => {
+      const btn = e.target;
+      for (let i = 0; i < 10; i++) {
+        const confetti = document.createElement('span');
+        confetti.classList.add('confetti');
+        confetti.style.left = `${Math.random() * btn.offsetWidth}px`;
+        confetti.style.top = `${Math.random() * btn.offsetHeight}px`;
+        confetti.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        btn.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 1000);
+      }
+    });
+  </script>
+
+</div>
+
+
+{% endblock %}

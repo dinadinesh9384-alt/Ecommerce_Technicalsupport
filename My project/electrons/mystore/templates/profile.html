@@ -1,0 +1,367 @@
+{% load static %}
+{% include "includes/nav_bar.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f7f7f7;
+      font-family: "Poppins", sans-serif;
+    }
+    .sidebar {
+      height: 100vh;
+      background: #111827;
+      color: white;
+      padding: 20px;
+    }
+    .sidebar h4 {
+      text-align: center;
+      color: #00d8ff;
+    }
+    .sidebar button {
+      width: 100%;
+      margin: 8px 0;
+      background: transparent;
+      border: none;
+      color: white;
+      text-align: left;
+      padding: 10px;
+      border-radius: 8px;
+    }
+    .sidebar button:hover {
+      background: #00d8ff;
+      color: black;
+    }
+    .content {
+      padding: 30px;
+      background: white;
+      border-radius: 12px;
+      min-height: 90vh;
+    }
+
+  /* 🎨 Product name styling */
+  .order-product {
+    color: #007bff; /* Bootstrap primary blue */
+    font-weight: 600;
+    transition: color 0.3s ease, transform 0.3s ease;
+  }
+
+  .order-product:hover {
+    color: #0056b3;
+    transform: scale(1.05);
+  }
+
+  /* 🚦 Order status animation (different for each status) */
+  .order-status {
+    color: red;
+    margin-left: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    animation: fadePulse 2s infinite;
+  }
+
+  .status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+
+  .status-shipped {
+    background-color: #cce5ff;
+    color: #004085;
+  }
+
+  .status-delivered {
+    background-color: #d4edda;
+    color: #155724;
+  }
+
+  /* 🔄 Simple pulse animation */
+  @keyframes fadePulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+  }
+
+  /* 🗓 Order date hover effect */
+  .order-date {
+    margin-left: 10px;
+    color: #4d866f;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+  }
+
+  .order-date:hover {
+    color: #28b926;
+    text-shadow: 0 0 5px rgba(0, 123, 255, 0.6);
+  }
+
+  /* Optional: spacing for table */
+  td {
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6;
+  }
+ .list-group-item:hover {
+    background-color: #f8f9fa;
+    transform: scale(1.02);
+    transition: all 0.2s ease;
+  }
+  </style>
+</head>
+<body>
+<div class="container-fluid">
+  <div class="row">
+    <!-- Left Sidebar -->
+    <div class="col-md-3 sidebar">
+      <h4>My Account</h4>
+      <hr style="color:white;">
+      <a href="/"><button>HOME</button></a>
+      <button onclick="showSection('profile')">👤 Profile</button>
+      <button onclick="showSection('payment')">💳 Payment</button>
+      <button onclick="showSection('orders')">📦 Orders</button>
+      <button onclick="showSection('cart')">🛒 Cart</button>
+      <button onclick="showSection('support')">🛠 Support</button>
+      <button onclick="showSection('settings')">⚙️ Settings</button>
+      <button onclick="showSection('logout')">🚪 Logout</button>
+    </div>
+
+    <!-- Right Content -->
+    <div class="col-md-9 p-4">
+      <!-- Profile Section -->
+      <div id="profile" class="content">
+        <h3>Personal Details</h3>
+        <p><strong>Name:</strong> {{ user_profile.user_name }} </p>
+        <p><strong>Email:</strong> {{ user_profile.user_email }}</p>
+        <p><strong>Phone:</strong> {{ user_profile.user_number }}</p>
+        {% for order in orders %}
+        {% if order.address %}
+        <p style="width: 200px;"><strong>Address :</strong> {{ order.address }}</p>
+        {% else %}Not added{% endif %}</p>
+        {% endfor %}
+        <hr>
+        <h4>Wishlist </h4>
+        <ul>
+          {% for item in wishlist %}
+            <li>{{ item.product_name }}</li>
+          {% empty %}
+            <li>No items in wishlist</li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Payment Section -->
+      <div id="payment" class="content" style="display:none;">
+        <h3>Payment Details</h3>
+        <p><strong>Payment History:</strong></p>
+        <ul>
+          {% for payment in payments %}
+            <li>₹{{ payment.amount }} - {{ payment.product.product_name }} - {{ payment.date|date:"d M Y" }}</li>
+          {% empty %}
+            <li>No payment history</li>
+          {% endfor %}
+        </ul>
+        <hr>
+        <p><strong>Bank Details:</strong></p>
+        <p>CANARA Bank - ****2614</p>
+      </div>
+
+      <!-- Orders Section -->
+       <div id="orders" class="content" style="display:none;">
+       <table>
+         <tr>
+      <td>
+        <span>Product Name :</span>
+      <span style="margin-left: 35px;">Order Status :</span>
+      <span style="margin-left: 35px;">Expected Delivery :</span>
+    <span style="margin-left: 35px;">Delivery Address:</span></td>
+     </tr>
+     {% for order in orders %}
+    
+<tr>
+  <td>
+    <span class="order-product">{{ order.product.product_name }}</span>
+    <span class="order-status status-{{ order.status|lower }}">{{ order.status }}</span>
+    <span class="order-date">Ordered on {{ order.order_date|date:"d M Y" }}</span>
+    <span style="margin-left: 30px;">{{ order.address }} </span>
+  </td>
+</tr>
+{% empty %}
+<tr><td>No orders yet</td></tr>
+{% endfor %}
+</table>
+</div>
+      <!-- Cart Section -->
+      <div id="cart" class="content" style="display:none;">
+        <h3>My Cart</h3>
+        <table>
+          {% for item in cart_items %}
+          <tr>
+            <th style="padding: 16px;">{{ item.product.product_name }} - ₹{{ item.product.product_price }} × {{ item.quantity }} id:{{ item.product.id }}</th>
+            <td><a href="/buy_product/{{ item.product.id }}">Buy Now</a></td>
+
+            {% empty %}
+            <li>Your cart is empty</li>
+          {% endfor %}
+        </table>
+        <a href="" class="btn btn-success">Go to Checkout</a>
+      </div>
+
+      <!-- Support Section -->
+      <div id="support" class="content" style="display:none;">
+        <h3>Support</h3>
+        <p>Need help? We’re here for you!</p>
+        <p>Email: support@eshop.com</p>
+        <p>Call: +91 99999 88888</p>
+        <p>Working Hours: 9 AM - 8 PM</p>
+        <div>
+          <!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#raiseTicketModal">
+  Raise a Ticket
+</button>
+
+
+<!-- Modal -->
+<div class="modal fade" id="raiseTicketModal" tabindex="-1" aria-labelledby="raiseTicketLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="raiseTicketLabel">Raise a Support Ticket</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="verifyMessage"></div>
+
+        <label>Enter the Warranty Code:</label><br>
+        <input type="text" id="warranty_code" class="form-control" placeholder="Enter your warranty code"><br>
+
+        <label>Describe your issue:</label><br>
+        <textarea id="ticket_issue" class="form-control" placeholder="Describe your issue"></textarea>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="submit_ticket" disabled>Send</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+           
+        </div>
+      </div>
+
+      <!-- Settings Section -->
+      <div id="settings" class="content" style="display:none;">
+  <div class="card shadow-sm border-0 p-3">
+    <h3 class="mb-3 text-primary">⚙️ Settings</h3>
+    <div class="list-group">
+      <a href="#" class="list-group-item list-group-item-action">Manage Notifications</a>
+      <a href="#" class="list-group-item list-group-item-action">Privacy Settings</a>
+    </div>
+  </div>
+</div>
+
+      <!-- Logout Section -->
+      <div id="logout" class="content" style="display:none;">
+        <h3>Logout</h3>
+        <p>Are you sure you want to log out?</p>
+        <a href="{% url 'logout' %}" class="btn btn-danger">Logout</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+ <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script> 
+ 
+<script>
+$(document).ready(function(){
+    $("#warranty_code").on("change", function(){
+      alert("work")
+        var code = $(this).val();
+        alert("work")
+        if (code.trim() === "") return;
+
+        $.ajax({
+            url: "{% url 'verify_warranty' %}",  // <-- Django URL we’ll make
+            type: "GET",
+            data: { warranty_number: code },
+            success: function(response){
+                if (response.valid) {
+                    $("#verifyMessage").html("<p class='text-success'>✅ Warranty verified for product: " + response.product_name + "</p>");
+                    $("#submit_ticket").prop("disabled", false);
+                } else {
+                    $("#verifyMessage").html("<p class='text-danger'>❌ Invalid or expired warranty code.</p>");
+                    $("#submit_ticket").prop("disabled", true);
+                }
+            },
+            error: function(){
+                $("#verifyMessage").html("<p class='text-danger'>⚠️ Error verifying warranty. Try again.</p>");
+                $("#submit_ticket").prop("disabled", true);
+            }
+        });
+    });
+});
+
+  $(document).ready(function(){
+
+  // when Send button clicked
+  $("#submit_ticket").on("click", function() {
+      const warranty_code = $("#warranty_code").val().trim();
+      const issue = $("#ticket_issue").val().trim();
+
+      if (warranty_code === "" || issue === "") {
+          $("#verifyMessage").html("<p class='text-danger'>⚠️ Please enter both warranty code and issue.</p>");
+          return;
+      }
+
+      // disable button to prevent double submit
+      $("#submit_ticket").prop("disabled", true).text("Sending...");
+
+      $.ajax({
+          url: "{% url 'create_ticket' %}",  // Django view for creating ticket
+          type: "POST",
+          data: {
+              csrfmiddlewaretoken: "{{ csrf_token }}", // ✅ include CSRF token
+              warranty_number: warranty_code,
+              issue: issue
+          },
+          success: function(response) {
+              if (response.success) {
+                  $("#verifyMessage").html("<p class='text-success'>🎉 Ticket raised successfully! Ticket ID: " + response.ticket_id + "</p>");
+                  $("#ticket_issue").val('');
+                  $("#warranty_code").val('');
+                  $("#submit_ticket").prop("disabled", true).text("Send");
+              } else {
+                  $("#verifyMessage").html("<p class='text-danger'>❌ " + response.error + "</p>");
+                  $("#submit_ticket").prop("disabled", false).text("Send");
+              }
+          },
+          error: function(xhr, status, error) {
+              console.error(error);
+              $("#verifyMessage").html("<p class='text-danger'>⚠️ Something went wrong. Try again later.</p>");
+              $("#submit_ticket").prop("disabled", false).text("Send");
+          }
+      });
+  });
+
+});
+</script>
+<script>
+  function showSection(sectionId) {
+    const sections = document.querySelectorAll('.content');
+    sections.forEach(sec => sec.style.display = 'none');
+    document.getElementById(sectionId).style.display = 'block';
+  }
+
+ </script>
+
+
+</body>
+</html>
